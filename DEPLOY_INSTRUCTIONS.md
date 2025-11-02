@@ -109,12 +109,10 @@ GOOGLE_AI_API_KEY=AIzaSyB7gxyp2cCvkS_BACeXnIoXmzJmIhTaD8c
 6. Scroll down to "Environment Variables" and add:
 
    ```
-   Key: VITE_SERVER_DOMAIN
-   Value: https://weblog-backend.onrender.com
+   VITE_SERVER_DOMAIN=https://weblog-backend-37pk.onrender.com
    (Use the actual URL from Step 2)
    
-   Key: VITE_AI_MODELS_URL
-   Value: https://weblog-ai.onrender.com
+   VITE_AI_MODELS_URL=https://weblog-ai-vlcm.onrender.com
    (Use the actual URL from Step 3)
    ```
 

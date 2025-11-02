@@ -18,15 +18,24 @@ const UserAuthForm = ({ type }) => {
     let { userAuth: { access_token }, setUserAuth } = useContext(UserContext)
 
     const userAuthThroughServer = (serverRoute, formData) => {
+        const serverDomain = import.meta.env.VITE_SERVER_DOMAIN;
+        
+        if (!serverDomain) {
+            toast.error("Server configuration error. Please check environment variables.");
+            console.error("VITE_SERVER_DOMAIN is not set");
+            return;
+        }
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData)
+        axios.post(serverDomain + serverRoute, formData)
         .then(({ data }) => {
             storeInSession("user", JSON.stringify(data))
-            
             setUserAuth(data)
+            toast.success(type === "sign-in" ? "Welcome back!" : "Account created successfully!")
         })
-        .catch(({ response }) => {
-            toast.error(response.data.error)
+        .catch((error) => {
+            const errorMessage = error.response?.data?.error || error.message || "Something went wrong. Please try again.";
+            toast.error(errorMessage);
+            console.error("Auth error:", error);
         })
 
     }
@@ -42,7 +51,13 @@ const UserAuthForm = ({ type }) => {
         let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
         let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
-        // formData
+        // formData - Fix: Get form element properly
+        const formElement = e.target.form || document.getElementById('formElement');
+        if (!formElement) {
+            toast.error("Form error. Please refresh the page.");
+            return;
+        }
+        
         let form = new FormData(formElement);
         let formData = {};
 
@@ -50,24 +65,33 @@ const UserAuthForm = ({ type }) => {
             formData[key] = value;
         }
 
-        let { fullname, email, password } = formData;
+        let { fullname, email, password, username } = formData;
 
         // form validation
-
-        if(fullname){
-            if(fullname.length < 3){
+        if(type !== "sign-in") {
+            // Signup validation
+            if(!fullname || fullname.length < 3){
                 return toast.error("Fullname must be at least 3 letters long")
-           }
+            }
+            if(!username || username.length < 3){
+                return toast.error("Username must be at least 3 characters long")
+            }
+            // Validate username format (alphanumeric only)
+            let usernameRegex = /^[a-zA-Z0-9]+$/;
+            if(!usernameRegex.test(username)){
+                return toast.error("Username can only contain letters and numbers")
+            }
         }
-       if(!email.length){
+        
+        if(!email || !email.length){
             return toast.error("Enter Email" )
-       }
-       if(!emailRegex.test(email)){
+        }
+        if(!emailRegex.test(email)){
             return toast.error("Email is invalid" )
-       }
-       if(!passwordRegex.test(password)){
+        }
+        if(!password || !passwordRegex.test(password)){
             return toast.error("Password should be 6 to 20 characters long with a numeric, 1 lowercase and 1 uppercase letters")
-       }
+        }
 
        userAuthThroughServer(serverRoute, formData)
 
@@ -87,18 +111,26 @@ const UserAuthForm = ({ type }) => {
                         <img src={coverImage} alt="" className="" />
                     </div>
                     <Toaster />
-                    <form id="formElement" className="w-2/3 max-w-[400px]">
+                    <form id="formElement" className="w-2/3 max-w-[400px]" onSubmit={handleSubmit}>
                         <h1 className="md:text-3xl text-2xl font-semibold capitalize text-center mb-4 md:mb-24">
                             {type === "sign-in" ? "welcome, we missed you" : "Connect with us"}
                         </h1>
                         {
                             type !== "sign-in" ? (
-                                <InputBox
-                                    name="fullname"
-                                    type="text"
-                                    placeholder="Full Name"
-                                    icon="fi-rr-user"
-                                />
+                                <>
+                                    <InputBox
+                                        name="fullname"
+                                        type="text"
+                                        placeholder="Full Name"
+                                        icon="fi-rr-user"
+                                    />
+                                    <InputBox
+                                        name="username"
+                                        type="text"
+                                        placeholder="Username"
+                                        icon="fi-rr-at"
+                                    />
+                                </>
                             ) : ""
                         }
                         <InputBox
@@ -114,8 +146,7 @@ const UserAuthForm = ({ type }) => {
                             icon="fi-rr-key"
                         />
 
-                        <button className="btn-dark center md:mt-12 mt-6" type="submit"
-                            onClick={handleSubmit}>
+                        <button className="btn-dark center md:mt-12 mt-6" type="submit">
                             {type.replace("-", " ")}
                         </button>
 
