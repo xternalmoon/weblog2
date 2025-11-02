@@ -23,7 +23,10 @@ const EditProfile = () => {
     const [ charactersLeft, setCharctersLeft ] = useState(bioLimit);
     const [ updatedProfileImg, setUpdatedProfileImg ] = useState(null);
 
-    let { personal_info: { fullname, username: profile_username, profile_img, email, bio }, social_links } = profile;
+    // Safe destructuring with defaults
+    const personal_info = profile?.personal_info || profileDataStructure.personal_info;
+    const social_links = profile?.social_links || profileDataStructure.social_links;
+    const { fullname = "", username: profile_username = "", profile_img = "", email = "", bio = "" } = personal_info;
 
     useEffect(() => {
 
@@ -36,11 +39,20 @@ const EditProfile = () => {
             })
             .then(({ data }) => {
                 // Backend returns { user }, so extract user data
-                if (data.user) {
-                    setProfile(data.user);
-                } else {
-                    setProfile(data);
+                let userData = data.user || data;
+                
+                // Ensure all required fields exist
+                if (!userData.personal_info) {
+                    userData.personal_info = profileDataStructure.personal_info;
                 }
+                if (!userData.social_links) {
+                    userData.social_links = profileDataStructure.social_links;
+                }
+                if (!userData.account_info) {
+                    userData.account_info = profileDataStructure.account_info;
+                }
+                
+                setProfile(userData);
                 setLoading(false);
             })
             .catch(err => {
