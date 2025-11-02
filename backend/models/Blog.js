@@ -59,6 +59,11 @@ const blogSchema = new mongoose.Schema({
     type: [mongoose.Schema.Types.ObjectId],
     ref: 'comments'
   },
+  liked_by: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'users',
+    default: []
+  },
   draft: {
     type: Boolean,
     default: true

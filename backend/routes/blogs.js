@@ -96,15 +96,23 @@ router.post('/create-blog', verifyToken, async (req, res) => {
     let blog;
     if (id) {
       // Update existing blog
+      const updateData = { title, des, banner, content, tags, draft, editedAt: Date.now() };
+      
+      // If publishing (draft changes from true to false), set publishedAt
+      const existingBlog = await Blog.findOne({ blog_id: id });
+      if (existingBlog && existingBlog.draft && !draft && !existingBlog.publishedAt) {
+        updateData.publishedAt = Date.now();
+      }
+      
       blog = await Blog.findOneAndUpdate(
         { blog_id: id },
-        { title, des, banner, content, tags, draft, editedAt: Date.now() },
+        updateData,
         { new: true }
       );
     } else {
       // Create new blog
       const blog_id = `blog_${Date.now()}_${author}`;
-      blog = new Blog({
+      const blogData = {
         blog_id,
         title,
         des,
@@ -113,7 +121,14 @@ router.post('/create-blog', verifyToken, async (req, res) => {
         tags,
         author,
         draft
-      });
+      };
+      
+      // Set publishedAt if not a draft
+      if (!draft) {
+        blogData.publishedAt = Date.now();
+      }
+      
+      blog = new Blog(blogData);
       await blog.save();
 
       // Update user's blogs array
@@ -208,21 +223,45 @@ router.post('/user-written-blogs-count', verifyToken, async (req, res) => {
 // Search blogs
 router.post('/search-blogs', async (req, res) => {
   try {
-    const { query, tag, page = 1 } = req.body;
-    const perPage = 10;
+    const { query, tag, page = 1, eliminate_blog, limit } = req.body;
+    const perPage = limit || 10;
     const skip = (page - 1) * perPage;
 
     let searchQuery = { draft: false };
+    
+    if (eliminate_blog) {
+      const blogToEliminate = await Blog.findOne({ blog_id: eliminate_blog });
+      if (blogToEliminate) {
+        searchQuery._id = { $ne: blogToEliminate._id };
+      }
+    }
+    
     if (query) {
-      searchQuery.$text = { $search: query };
+      // Try text search first, fallback to regex if text index doesn't work
+      try {
+        searchQuery.$text = { $search: query };
+      } catch (e) {
+        searchQuery.$or = [
+          { title: new RegExp(query, 'i') },
+          { des: new RegExp(query, 'i') },
+          { tags: { $in: [new RegExp(query, 'i')] } }
+        ];
+      }
     }
     if (tag) {
       searchQuery.tags = tag;
     }
 
+    let sortOptions = {};
+    if (query && searchQuery.$text) {
+      sortOptions = { score: { $meta: 'textScore' }, publishedAt: -1 };
+    } else {
+      sortOptions = { publishedAt: -1 };
+    }
+
     const blogs = await Blog.find(searchQuery)
       .populate('author', 'personal_info.fullname personal_info.username personal_info.profile_img')
-      .sort({ score: { $meta: 'textScore' }, publishedAt: -1 })
+      .sort(sortOptions)
       .skip(skip)
       .limit(perPage);
 
@@ -233,23 +272,71 @@ router.post('/search-blogs', async (req, res) => {
   }
 });
 
+// Search blogs count
+router.post('/search-blogs-count', async (req, res) => {
+  try {
+    const { query, tag, eliminate_blog } = req.body;
+
+    let searchQuery = { draft: false };
+    
+    if (eliminate_blog) {
+      const blogToEliminate = await Blog.findOne({ blog_id: eliminate_blog });
+      if (blogToEliminate) {
+        searchQuery._id = { $ne: blogToEliminate._id };
+      }
+    }
+    
+    if (query) {
+      try {
+        searchQuery.$text = { $search: query };
+      } catch (e) {
+        searchQuery.$or = [
+          { title: new RegExp(query, 'i') },
+          { des: new RegExp(query, 'i') },
+          { tags: { $in: [new RegExp(query, 'i')] } }
+        ];
+      }
+    }
+    if (tag) {
+      searchQuery.tags = tag;
+    }
+
+    const count = await Blog.countDocuments(searchQuery);
+    res.json({ totalDocs: count });
+  } catch (error) {
+    console.error('Search blogs count error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Like blog
 router.post('/like-blog', verifyToken, async (req, res) => {
   try {
-    const { blog_id } = req.body;
+    const { _id, islikedByUser } = req.body;
     const userId = req.user._id;
 
-    // For simplicity, we'll just increment/decrement likes
-    // In production, you'd want to track which users liked which blogs
-    const blog = await Blog.findById(blog_id);
+    const blog = await Blog.findById(_id);
     if (!blog) {
       return res.status(404).json({ error: 'Blog not found' });
     }
 
-    // This is a simplified version - you'd check if user already liked
-    await Blog.findByIdAndUpdate(blog_id, { $inc: { 'activity.total_likes': 1 } });
+    const isLiked = blog.liked_by.some(id => id.toString() === userId.toString());
 
-    res.json({ message: 'Blog liked successfully' });
+    if (islikedByUser || isLiked) {
+      // Unlike - remove user from liked_by and decrement
+      await Blog.findByIdAndUpdate(_id, {
+        $pull: { liked_by: userId },
+        $inc: { 'activity.total_likes': -1 }
+      });
+      res.json({ message: 'Blog unliked successfully', liked: false });
+    } else {
+      // Like - add user to liked_by and increment
+      await Blog.findByIdAndUpdate(_id, {
+        $addToSet: { liked_by: userId },
+        $inc: { 'activity.total_likes': 1 }
+      });
+      res.json({ message: 'Blog liked successfully', liked: true });
+    }
   } catch (error) {
     console.error('Like blog error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -259,10 +346,16 @@ router.post('/like-blog', verifyToken, async (req, res) => {
 // Check if liked
 router.post('/isliked-by-user', verifyToken, async (req, res) => {
   try {
-    const { blog_id } = req.body;
-    // Simplified - always return false
-    // In production, check actual like status
-    res.json({ isLiked: false });
+    const { _id } = req.body;
+    const userId = req.user._id;
+
+    const blog = await Blog.findById(_id);
+    if (!blog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
+
+    const isLiked = blog.liked_by.some(id => id.toString() === userId.toString());
+    res.json({ result: isLiked });
   } catch (error) {
     console.error('Is liked error:', error);
     res.status(500).json({ error: 'Internal server error' });

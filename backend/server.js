@@ -32,7 +32,11 @@ app.use('/api/', limiter);
 // MongoDB Connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://webblog:tcgPb8JyARfD3qRJ@cluster0.aj1c1p8.mongodb.net/?appName=Cluster0');
+    if (!process.env.MONGO_URI) {
+      console.error('❌ MONGO_URI environment variable is not set');
+      process.exit(1);
+    }
+    await mongoose.connect(process.env.MONGO_URI);
     console.log('✅ MongoDB Connected Successfully');
   } catch (error) {
     console.error('❌ MongoDB Connection Error:', error.message);
@@ -43,7 +47,7 @@ const connectDB = async () => {
 connectDB();
 
 // Routes
-app.use('/change-password', changePasswordRoutes);
+app.use(changePasswordRoutes);
 app.use(authRoutes);
 app.use(userRoutes);
 app.use(blogRoutes);

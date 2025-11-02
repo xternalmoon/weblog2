@@ -27,6 +27,13 @@ router.post('/add-comment', verifyToken, async (req, res) => {
 
     await commentObj.save();
 
+    // If it's a reply, add to parent's children array
+    if (replying_to) {
+      await Comment.findByIdAndUpdate(replying_to, {
+        $push: { children: commentObj._id }
+      });
+    }
+
     // Add comment to blog
     await Blog.findByIdAndUpdate(_id, {
       $push: { comments: commentObj._id },
@@ -69,7 +76,7 @@ router.post('/get-blog-comments', async (req, res) => {
       .skip(parseInt(skip))
       .limit(10);
 
-    res.json({ comments });
+    res.json(comments);
   } catch (error) {
     console.error('Get comments error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -113,9 +120,18 @@ router.post('/delete-comment', verifyToken, async (req, res) => {
     }
 
     await Comment.findByIdAndUpdate(_id, { deletedAt: Date.now() });
+    
+    // Update blog comment count
     await Blog.findByIdAndUpdate(comment.blog_id, {
       $inc: { 'activity.total_comments': -1 }
     });
+
+    // If it's a reply, remove from parent's children array
+    if (comment.parent) {
+      await Comment.findByIdAndUpdate(comment.parent, {
+        $pull: { children: _id }
+      });
+    }
 
     res.json({ message: 'Comment deleted successfully' });
   } catch (error) {
