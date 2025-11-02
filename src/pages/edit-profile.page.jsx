@@ -27,18 +27,32 @@ const EditProfile = () => {
 
     useEffect(() => {
 
-        if(access_token){
-            axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/get-profile", { username: userAuth.username })
+        if(access_token && userAuth.username){
+            let serverDomain = import.meta.env.VITE_SERVER_DOMAIN?.replace(/\/+$/, '') || '';
+            axios.post(serverDomain + "/get-profile", { username: userAuth.username }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(({ data }) => {
-                setProfile(data);
+                // Backend returns { user }, so extract user data
+                if (data.user) {
+                    setProfile(data.user);
+                } else {
+                    setProfile(data);
+                }
                 setLoading(false);
             })
             .catch(err => {
-                console.log(err);
+                console.error("Get profile error:", err);
+                toast.error(err.response?.data?.error || "Failed to load profile");
+                setLoading(false);
             })
+        } else if (!access_token) {
+            setLoading(false);
         }
 
-    }, [access_token])
+    }, [access_token, userAuth.username])
 
     const handleCharacterChange = (e) => {
         setCharctersLeft(bioLimit - e.target.value.length)

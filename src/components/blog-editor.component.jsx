@@ -320,11 +320,19 @@ const BlogEditor = () => {
             toast.dismiss(loadingToast);
             toast.success("Uploaded");
             setBlog({ ...blog, banner: url });
+            // Reset file input to allow re-uploading same file
+            e.target.value = '';
+          } else {
+            toast.dismiss(loadingToast);
+            toast.error("Upload failed. Please try again.");
           }
         })
         .catch((err) => {
           toast.dismiss(loadingToast);
-          return toast.error(err);
+          console.error("Upload error:", err);
+          toast.error(err?.message || err || "Upload failed. Please try again.");
+          // Reset file input on error
+          e.target.value = '';
         });
     }
   };
@@ -445,9 +453,14 @@ const BlogEditor = () => {
               onChange={handleTitleChange}
             ></textarea>
 
-            <div className="relative aspect-video hover:opacity-80 bg-white border-4 border-grey">
-              <label htmlFor="uploadBanner">
-                <img src={banner} className="z-20" onError={handleError} />
+            <div className="relative aspect-video hover:opacity-80 bg-white border-4 border-grey overflow-hidden">
+              <label htmlFor="uploadBanner" className="cursor-pointer block w-full h-full">
+                <img 
+                  src={banner || (theme === "light" ? Banner : DarkBanner)} 
+                  className="w-full h-full object-cover z-20" 
+                  onError={handleError}
+                  alt="Blog banner"
+                />
                 <input
                   id="uploadBanner"
                   type="file"
