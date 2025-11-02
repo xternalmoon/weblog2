@@ -26,16 +26,30 @@ const UserAuthForm = ({ type }) => {
             return;
         }
 
-        axios.post(serverDomain + serverRoute, formData)
+        const fullUrl = serverDomain + serverRoute;
+        console.log("📤 Sending request to:", fullUrl);
+        console.log("📦 Form data:", formData);
+
+        axios.post(fullUrl, formData)
         .then(({ data }) => {
             storeInSession("user", JSON.stringify(data))
             setUserAuth(data)
             toast.success(type === "sign-in" ? "Welcome back!" : "Account created successfully!")
         })
         .catch((error) => {
-            const errorMessage = error.response?.data?.error || error.message || "Something went wrong. Please try again.";
-            toast.error(errorMessage);
-            console.error("Auth error:", error);
+            console.error("❌ Auth error:", error);
+            console.error("❌ Error response:", error.response);
+            console.error("❌ Request URL:", error.config?.url);
+            
+            if (error.response?.status === 404) {
+                toast.error(`Route not found. Check backend URL: ${serverDomain}`);
+            } else if (error.response?.data?.error) {
+                toast.error(error.response.data.error);
+            } else if (error.message) {
+                toast.error(error.message);
+            } else {
+                toast.error("Something went wrong. Please try again.");
+            }
         })
 
     }
@@ -51,8 +65,9 @@ const UserAuthForm = ({ type }) => {
         let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
         let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
-        // formData - Fix: Get form element properly
-        const formElement = e.target.form || document.getElementById('formElement');
+        // formData - FIX: e.currentTarget is the form when onSubmit fires
+        // e.target would be the form itself, not a button, so e.target.form is undefined
+        const formElement = e.currentTarget || document.getElementById('formElement');
         if (!formElement) {
             toast.error("Form error. Please refresh the page.");
             return;

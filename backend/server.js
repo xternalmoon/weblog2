@@ -61,6 +61,15 @@ app.get('/', (req, res) => {
   res.json({ message: 'WeBlog API Server is running!', status: 'ok' });
 });
 
+// 404 handler for undefined routes (must be before error handler)
+app.use((req, res) => {
+  console.error(`❌ 404 - Route not found: ${req.method} ${req.path}`);
+  res.status(404).json({ 
+    error: `Route not found: ${req.method} ${req.path}`,
+    status: 'error'
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
