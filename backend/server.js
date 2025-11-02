@@ -46,6 +46,11 @@ const connectDB = async () => {
 
 connectDB();
 
+// Health check (must be before routes to avoid catch-all)
+app.get('/', (req, res) => {
+  res.json({ message: 'WeBlog API Server is running!', status: 'ok' });
+});
+
 // Routes
 app.use(changePasswordRoutes);
 app.use(authRoutes);
@@ -56,12 +61,7 @@ app.use(aiRoutes);
 app.use(uploadRoutes);
 app.use(notificationRoutes);
 
-// Health check
-app.get('/', (req, res) => {
-  res.json({ message: 'WeBlog API Server is running!', status: 'ok' });
-});
-
-// 404 handler for undefined routes (must be before error handler)
+// 404 handler for undefined routes (must be last, before error handler)
 app.use((req, res) => {
   console.error(`❌ 404 - Route not found: ${req.method} ${req.path}`);
   res.status(404).json({ 

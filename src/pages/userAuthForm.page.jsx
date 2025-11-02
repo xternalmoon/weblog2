@@ -18,7 +18,7 @@ const UserAuthForm = ({ type }) => {
     let { userAuth: { access_token }, setUserAuth } = useContext(UserContext)
 
     const userAuthThroughServer = (serverRoute, formData) => {
-        const serverDomain = import.meta.env.VITE_SERVER_DOMAIN;
+        let serverDomain = import.meta.env.VITE_SERVER_DOMAIN;
         
         if (!serverDomain) {
             toast.error("Server configuration error. Please check environment variables.");
@@ -26,11 +26,22 @@ const UserAuthForm = ({ type }) => {
             return;
         }
 
+        // Remove trailing slash if present
+        serverDomain = serverDomain.replace(/\/+$/, '');
+        // Ensure serverRoute starts with /
+        if (!serverRoute.startsWith('/')) {
+            serverRoute = '/' + serverRoute;
+        }
+
         const fullUrl = serverDomain + serverRoute;
         console.log("📤 Sending request to:", fullUrl);
         console.log("📦 Form data:", formData);
 
-        axios.post(fullUrl, formData)
+        axios.post(fullUrl, formData, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
         .then(({ data }) => {
             storeInSession("user", JSON.stringify(data))
             setUserAuth(data)
