@@ -92,8 +92,10 @@ const EditProfile = () => {
             .then(url => {
                 
                 if(url){
-                    axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/update-profile-img", { url }, {
+                    let serverDomain = import.meta.env.VITE_SERVER_DOMAIN?.replace(/\/+$/, '') || '';
+                    axios.post(serverDomain + "/update-profile-img", { url }, {
                         headers: { 
+                            'Content-Type': 'application/json',
                             'Authorization': `Bearer ${access_token}`
                         }
                     })
@@ -149,11 +151,13 @@ const EditProfile = () => {
         let loadingToast = toast.loading("Updating.....");
         e.target.setAttribute("disabled", true);
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/update-profile", {
+        let serverDomain = import.meta.env.VITE_SERVER_DOMAIN?.replace(/\/+$/, '') || '';
+        axios.post(serverDomain + "/update-profile", {
             username, bio, 
             social_links: { youtube, facebook, twitter, github, instagram, website }
         }, {
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${access_token}`
             }
         })

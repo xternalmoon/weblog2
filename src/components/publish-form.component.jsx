@@ -42,14 +42,18 @@ const PublishForm = () => {
     const handleKeyDown = (e) => {
         if (e.keyCode === 13 || e.keyCode === 188) {
             e.preventDefault();
-            let tag = e.target.value;
+            let tag = e.target.value.trim();
 
-            if (tags.length < tagLimit) {
-                if (!tags.includes(tag) && tag.length) {
-                    setBlog({ ...blog, tags: [...tags, tag] });
+            if (tag.length > 0) {
+                if (tags.length < tagLimit) {
+                    if (!tags.includes(tag)) {
+                        setBlog({ ...blog, tags: [...tags, tag] });
+                    } else {
+                        toast.error("Tag already exists");
+                    }
+                } else {
+                    toast.error(`You can add max ${tagLimit} Tags`);
                 }
-            } else {
-                toast.error(`You can add max ${tagLimit} Tags`);
             }
             e.target.value = "";
         }
@@ -179,15 +183,21 @@ const PublishForm = () => {
                     <p className="mt-1 text-dark-grey text-sm text-right">{characterLimit - des.length} characters left</p>
 
                     <p className="text-dark-grey mb-2 mt-9">Topics - Enhance searchability and ranking of your blog post</p>
-                    <div className="relative input-box pl-2 py-2 pb-4">
-                        <input type="text" placeholder="" className="sticky input-box bg-white top-0 left-0 pl-4 mb-3 focus:bg-white"
+                    <p className="text-dark-grey text-sm mb-2">Type a tag and press Enter or comma (,) to add it</p>
+                    <div className="relative input-box pl-2 py-2 pb-4 min-h-[60px]">
+                        <input 
+                            type="text" 
+                            placeholder="Type tag and press Enter..." 
+                            className="sticky input-box bg-white top-0 left-0 pl-4 mb-3 focus:bg-white w-full"
                             onKeyDown={handleKeyDown}
                         />
-                        {
-                            tags.map((tag, i) => {
-                                return <Tag tag={tag} tagIndex={i} key={i} />;
-                            })
-                        }
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            {
+                                tags.map((tag, i) => {
+                                    return <Tag tag={tag} tagIndex={i} key={i} />;
+                                })
+                            }
+                        </div>
                     </div>
                     <p className="mt-1 mb-4 text-dark-grey text-right">{tagLimit - tags.length} Tags left</p>
 
