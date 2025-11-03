@@ -1,4 +1,5 @@
 import axios from "axios";
+import { apiUrl } from "../common/api";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../App";
 import { filterPaginationData } from "../common/filter-pagination-data";
@@ -23,7 +24,7 @@ const ManageBlogs = () => {
 
     const getBlogs = ({ page, draft, deletedDocCount = 0 }) => {
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/user-written-blogs", {
+        axios.post(apiUrl("/user-written-blogs"), {
             page, draft, query, deletedDocCount 
         }, {
             headers: {

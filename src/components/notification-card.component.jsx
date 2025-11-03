@@ -4,6 +4,7 @@ import { useContext, useState } from "react";
 import NotificationCommentField from "./notification-comment-field.component";
 import { UserContext } from "../App";
 import axios from "axios";
+import { apiUrl } from "../common/api";
 
 const NotificationCard = ({ data, index, notificationState }) => {
 
@@ -23,7 +24,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
 
         target.setAttribute("disabled", true);
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/delete-comment", { _id: comment_id }, {
+        axios.post(apiUrl("/delete-comment"), { _id: comment_id }, {
             headers: {
                 'Authorization': `Bearer ${access_token}`
             }

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { apiUrl, aiUrl } from "../common/api";
 import { createContext, useEffect, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
@@ -61,7 +62,7 @@ const BlogPage = () => {
 
   const fetchBlog = () => {
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog", { blog_id })
+      .post(apiUrl("/get-blog"), { blog_id })
       .then(async ({ data: { blog } }) => {
         blog.comments = await fetchComments({
           blog_id: blog._id,
@@ -70,7 +71,7 @@ const BlogPage = () => {
         setBlog(blog);
 
         axios
-          .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", {
+          .post(apiUrl("/search-blogs"), {
             tag: blog.tags[0],
             limit: 6,
             eliminate_blog: blog_id,
@@ -123,7 +124,7 @@ const BlogPage = () => {
           id: "summary-loading",
         });
 
-        const response = await axios.post(import.meta.env.VITE_AI_MODELS_URL + "/summarize", {
+        const response = await axios.post(aiUrl("/summarize"), {
           text: selectedText,
         });
 

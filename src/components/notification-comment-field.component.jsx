@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
+import { apiUrl } from "../common/api";
 import { UserContext } from "../App";
 
 const NotificationCommentField = ({ _id, blog_author, index = undefined, replyingTo = undefined, setReplying, notification_id, notificationData }) => {
@@ -17,7 +18,7 @@ const NotificationCommentField = ({ _id, blog_author, index = undefined, replyin
             return toast.error("Write something to leave a comment....")
         }
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/add-comment", {
+        axios.post(apiUrl("/add-comment"), {
             _id, blog_author: user_id, comment, replying_to: replyingTo, notification_id
         }, {
             headers: {

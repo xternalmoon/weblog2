@@ -9,6 +9,7 @@ import { EditorContext } from "../pages/editor.pages";
 import EditorJS from "@editorjs/editorjs";
 import { tools } from "./tools.component";
 import axios from "axios";
+import { apiUrl, aiUrl } from "../common/api";
 import { ThemeContext, UserContext } from "../App";
 
 const BlogEditor = () => {
@@ -173,7 +174,7 @@ const BlogEditor = () => {
         });
 
         const response = await axios.post(
-          import.meta.env.VITE_AI_MODELS_URL + "/paraphrase",
+            aiUrl("/paraphrase"),
           { text: selectedText }
         );
 
@@ -255,7 +256,7 @@ const BlogEditor = () => {
 
           // Send the last 10 words to the /predict API
           const response = await axios.post(
-            import.meta.env.VITE_AI_MODELS_URL + "/predictor",
+            aiUrl("/predictor"),
             { text: last10Words }
           );
 
@@ -399,7 +400,7 @@ const BlogEditor = () => {
 
         axios
           .post(
-            import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",
+            apiUrl("/create-blog"),
             { ...blogObj, id: blog_id },
             {
               headers: {

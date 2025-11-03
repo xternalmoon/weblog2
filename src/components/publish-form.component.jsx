@@ -4,6 +4,7 @@ import { useContext, useState } from "react";
 import { EditorContext } from "../pages/editor.pages";
 import Tag from "./tags.component";
 import axios from "axios";
+import { apiUrl, aiUrl } from "../common/api";
 import { UserContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfettiEffect from "../common/confetti";
@@ -64,7 +65,7 @@ const PublishForm = () => {
             // Show loading toast
             const loadingToastId = toast.loading("Title on the way..");
     
-            axios.post(import.meta.env.VITE_AI_MODELS_URL + "/title", { text: des }, {
+            axios.post(aiUrl("/title"), { text: des }, {
             })
             .then(response => {
                 setBlog({ ...blog, title: response.data.title });
@@ -109,7 +110,7 @@ const PublishForm = () => {
             title, banner, des, content, tags, draft: false
         };
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog", { ...blogObj, id: blog_id }, {
+        axios.post(apiUrl("/create-blog"), { ...blogObj, id: blog_id }, {
             headers: {
                 'Authorization': `Bearer ${access_token}`
             }

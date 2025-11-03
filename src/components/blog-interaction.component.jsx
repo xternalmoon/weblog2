@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ThemeContext, UserContext } from "../App";
 import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
+import { apiUrl } from "../common/api";
 import x from "../imgs/twitter.png";
 import xDark from "../imgs/twitter-dark.png";
 
@@ -36,7 +37,7 @@ const BlogInteraction = () => {
     if (access_token) {
       axios
         .post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/isliked-by-user",
+          apiUrl("/isliked-by-user"),
           { _id },
           {
             headers: {
@@ -61,7 +62,7 @@ const BlogInteraction = () => {
 
       axios
         .post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/like-blog",
+          apiUrl("/like-blog"),
           { _id, islikedByUser },
           {
             headers: {

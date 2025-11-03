@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { BlogContext } from "../pages/blog.page";
 import CommentField from "./comment-field.component";
 import axios from "axios";
+import { apiUrl } from "../common/api";
 import NoDataMessage from "./nodata.component";
 import AnimationWrapper from "../common/page-animation";
 import CommentCard from "./comment-card.component";
@@ -10,7 +11,7 @@ export const fetchComments = async ({ skip = 0, blog_id, setParentCommentCountFu
 
     let res;
 
-    await axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog-comments", { blog_id, skip })
+    await axios.post(apiUrl("/get-blog-comments"), { blog_id, skip })
     .then(({ data }) => {
 
         data.map(comment => {

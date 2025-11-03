@@ -1,4 +1,5 @@
 import axios from "axios";
+import { apiUrl } from "../common/api";
 import AnimationWrapper from "../common/page-animation";
 import InPageNavigation from "../components/inpage-navigation.component";
 import { useEffect, useState } from "react";
@@ -28,7 +29,7 @@ const HomePage = () => {
 
     const fetchLatestBlogs = ({ page = 1 }) => {
         axios
-            .post(import.meta.env.VITE_SERVER_DOMAIN + "/latest-blogs", { page })
+            .post(apiUrl("/latest-blogs"), { page })
             .then( async ({ data }) => {
 
                 let formatedData = await filterPaginationData({
@@ -47,7 +48,7 @@ const HomePage = () => {
 
     const fetchBlogsByCategory = ({ page = 1 }) => {
         axios
-            .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", { tag: pageState, page })
+            .post(apiUrl("/search-blogs"), { tag: pageState, page })
             .then( async ({ data }) => {
                 
                 let formatedData = await filterPaginationData({
@@ -67,7 +68,7 @@ const HomePage = () => {
 
     const fetchTrendingBlogs = () => {
         axios
-            .get(import.meta.env.VITE_SERVER_DOMAIN + "/trending-blogs")
+            .get(apiUrl("/trending-blogs"))
             .then(({ data }) => {
                 setTrendingBlog(data.blogs);
             })
