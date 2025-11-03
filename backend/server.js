@@ -22,6 +22,15 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Normalize incoming URLs to collapse duplicate slashes (e.g., //route -> /route)
+app.use((req, res, next) => {
+  if (req.url.includes('//')) {
+    req.url = req.url.replace(/\/+/, '/');
+    req.url = req.url.replace(/\/+/g, '/');
+  }
+  next();
+});
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

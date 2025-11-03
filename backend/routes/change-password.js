@@ -7,10 +7,16 @@ const router = express.Router();
 // Change password
 router.post('/change-password', verifyToken, async (req, res) => {
   try {
-    const { current_password, new_password } = req.body;
+    // Accept both snake_case and camelCase from frontend
+    const current_password = req.body.current_password || req.body.currentPassword;
+    const new_password = req.body.new_password || req.body.newPassword;
     const userId = req.user._id;
 
     const user = await User.findById(userId);
+
+    if (!current_password || !new_password) {
+      return res.status(400).json({ error: 'Both current and new password are required' });
+    }
 
     if (!await user.comparePassword(current_password)) {
       return res.status(401).json({ error: 'Current password is incorrect' });
