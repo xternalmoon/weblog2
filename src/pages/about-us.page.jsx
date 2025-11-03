@@ -106,7 +106,7 @@ const AboutUsPage = () => {
             <div className="item hover:bg-logoGreen hover:text-white hover:border-logoGreen transition-all duration-300 border-b-2 border-black w-full py-10 flex items-center justify-between p-4 hover:cursor-pointer">
               <div className="names text-xl md:text-3xl flex gap-20">
                 <h3 className="hidden md:block text-logoGreen">01</h3>
-                <h1>Anmol Mittal</h1>
+                <h1>Tahmid Mohammad</h1>
               </div>
               <h3 className="md:text-2xl">Model Development</h3>
             </div>
@@ -114,7 +114,7 @@ const AboutUsPage = () => {
             <div className="item hover:bg-logoGreen hover:text-white hover:border-logoGreen transition-all duration-300 border-b-2 border-black w-full py-10 flex items-center justify-between p-4 hover:cursor-pointer">
               <div className="names text-xl md:text-3xl flex gap-20">
                 <h3 className="hidden md:block text-logoGreen">02</h3>
-                <h1>Abhinav</h1>
+                <h1>Nishant Kale</h1>
               </div>
               <h3 className="md:text-2xl">Frontend</h3>
             </div>
@@ -122,7 +122,7 @@ const AboutUsPage = () => {
             <div className="item hover:bg-logoGreen hover:text-white hover:border-logoGreen transition-all duration-300 border-b-2 border-black w-full py-10 flex items-center justify-between p-4 hover:cursor-pointer">
               <div className="names text-xl md:text-3xl flex gap-20">
                 <h3 className="hidden md:block text-logoGreen">03</h3>
-                <h1>Anmol Arora</h1>
+                <h1>Tahmid Mohammad</h1>
               </div>
               <h3 className="md:text-2xl">Backend & Integration</h3>
             </div>
