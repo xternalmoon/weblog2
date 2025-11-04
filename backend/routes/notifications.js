@@ -31,10 +31,13 @@ router.post('/notifications', verifyToken, async (req, res) => {
 
     let query = { notification_for: userId };
     
+    // support filters: all | like | comment | reply | read | unread
     if (filter === 'unread') {
       query.seen = false;
     } else if (filter === 'read') {
       query.seen = true;
+    } else if (filter === 'like' || filter === 'comment' || filter === 'reply') {
+      query.type = filter;
     }
 
     const notifications = await Notification.find(query)
@@ -57,6 +60,30 @@ router.post('/notifications', verifyToken, async (req, res) => {
     res.json({ notifications });
   } catch (error) {
     console.error('Get notifications error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Count notifications for pagination based on filter
+router.post('/all-notifications-count', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { filter } = req.body || {};
+
+    const query = { notification_for: userId };
+
+    if (filter === 'unread') {
+      query.seen = false;
+    } else if (filter === 'read') {
+      query.seen = true;
+    } else if (filter === 'like' || filter === 'comment' || filter === 'reply') {
+      query.type = filter;
+    }
+
+    const totalDocs = await Notification.countDocuments(query);
+    res.json({ totalDocs });
+  } catch (error) {
+    console.error('All notifications count error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

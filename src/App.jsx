@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar.component";
 import React, { createContext, useEffect, useState, Suspense } from "react"; // Import Suspense here
-import { lookInSession } from "./common/session";
+import { lookInSession, lookInLocal } from "./common/session";
 
 const Editor = React.lazy(() => import("./pages/editor.pages"));
 const HomePage = React.lazy(() => import("./pages/home.page"));
@@ -34,8 +34,9 @@ const App = () => {
         const handleRightClick = (e) => e.preventDefault();
         document.addEventListener("contextmenu", handleRightClick);
 
-        let userInSession = lookInSession("user");
-        let themeInSession = lookInSession("theme");
+        // Prefer persistent localStorage, fallback to sessionStorage
+        let userInSession = lookInLocal("user") || lookInSession("user");
+        let themeInSession = lookInLocal("theme") || lookInSession("theme");
 
         userInSession ? setUserAuth(JSON.parse(userInSession)) : setUserAuth({ access_token: null });
 

@@ -15,17 +15,7 @@ const HomePage = () => {
     let [blogs, setBlog] = useState(null);
     let [trendingBlogs, setTrendingBlog] = useState(null);
     let [ pageState, setPageState ] = useState("home");
-
-    let categories = [
-        "technology",
-        "travel",
-        "health",
-        "personal finance",
-        "speed",
-        "fashion",
-        "education",
-        "lifestyle",
-      ];
+    let [ categories, setCategories ] = useState([]);
 
     const fetchLatestBlogs = ({ page = 1 }) => {
         axios
@@ -77,6 +67,17 @@ const HomePage = () => {
             });
     };
 
+    const fetchRandomTags = () => {
+        axios.get(apiUrl("/tags/distinct"))
+            .then(({ data }) => {
+                const tags = Array.isArray(data.tags) ? data.tags : [];
+                setCategories(tags);
+            })
+            .catch(() => {
+                setCategories([]);
+            })
+    }
+
     const loadBlogByCategory = (e) => {
         
         let category = e.target.innerText.toLowerCase(); 
@@ -104,6 +105,10 @@ const HomePage = () => {
 
         if(!trendingBlogs){
             fetchTrendingBlogs();
+        }
+
+        if(!categories.length){
+            fetchRandomTags();
         }
 
     }, [pageState]);

@@ -54,7 +54,22 @@ router.post('/add-comment', verifyToken, async (req, res) => {
       });
     }
 
-    res.json({ message: 'Comment added successfully' });
+    // Return populated comment for frontend to render immediately
+    const populated = await Comment.findById(commentObj._id)
+      .populate('commented_by', 'personal_info.fullname personal_info.username personal_info.profile_img')
+      .lean();
+
+    res.json({
+      _id: populated._id,
+      blog_id: populated.blog_id,
+      blog_author: populated.blog_author,
+      comment: populated.comment,
+      children: populated.children || [],
+      commented_by: populated.commented_by,
+      isReply: populated.isReply,
+      parent: populated.parent,
+      commentedAt: populated.commentedAt
+    });
   } catch (error) {
     console.error('Add comment error:', error);
     res.status(500).json({ error: 'Internal server error' });

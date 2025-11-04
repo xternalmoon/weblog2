@@ -43,12 +43,15 @@ const ProfilePage = () => {
 
     const fetchUserProfile = () => {
         axios.post(apiUrl("/get-profile"), { username: profileId })
-        .then(({ data: user }) => {
-            if(user != null){
+        .then(({ data }) => {
+            const user = data && data.user ? data.user : null;
+            if(user){
                 setProfile(user);
+                setProfileLoaded(profileId)
+                getBlogs({ user_id: user._id })
+            } else {
+                setProfileLoaded(profileId)
             }
-            setProfileLoaded(profileId)
-            getBlogs({ user_id: user._id })
             setLoading(false);
         })
         .catch(err => {

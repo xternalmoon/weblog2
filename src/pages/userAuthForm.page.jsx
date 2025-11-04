@@ -9,7 +9,7 @@ import google from "../imgs/google.png";
 import { Link, Navigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
-import { storeInSession } from "../common/session";
+import { storeInLocal } from "../common/session";
 import { ThemeContext, UserContext } from "../App";
 
 
@@ -43,7 +43,7 @@ const UserAuthForm = ({ type }) => {
             }
         })
         .then(({ data }) => {
-            storeInSession("user", JSON.stringify(data))
+            storeInLocal("user", JSON.stringify(data))
             setUserAuth(data)
             toast.success(type === "sign-in" ? "Welcome back!" : "Account created successfully!")
         })

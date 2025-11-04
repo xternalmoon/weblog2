@@ -362,5 +362,23 @@ router.post('/isliked-by-user', verifyToken, async (req, res) => {
   }
 });
 
+// Distinct random tags from published blogs
+router.get('/tags/distinct', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 12, 50);
+    // Get distinct tags
+    const distinctTags = await Blog.distinct('tags', { draft: false });
+    // Shuffle and take up to limit
+    for (let i = distinctTags.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [distinctTags[i], distinctTags[j]] = [distinctTags[j], distinctTags[i]];
+    }
+    res.json({ tags: distinctTags.slice(0, limit) });
+  } catch (error) {
+    console.error('Distinct tags error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
 

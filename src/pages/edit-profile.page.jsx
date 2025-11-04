@@ -7,7 +7,7 @@ import Loader from "../components/loader.component";
 import toast, { Toaster } from "react-hot-toast";
 import InputBox from "../components/input.component";
 import { uploadImage } from "../common/aws";
-import { storeInSession } from "../common/session";
+import { storeInLocal } from "../common/session";
 
 const EditProfile = () => {
 
@@ -103,7 +103,7 @@ const EditProfile = () => {
 
                         let newUserAuth = { ...userAuth, profile_img: data.profile_img } 
 
-                        storeInSession("user", JSON.stringify(newUserAuth));
+                        storeInLocal("user", JSON.stringify(newUserAuth));
                         setUserAuth(newUserAuth);
 
                         setUpdatedProfileImg(null);
@@ -167,7 +167,7 @@ const EditProfile = () => {
 
                 let newUserAuth = { ...userAuth, username: data.username };
                 
-                storeInSession("user", JSON.stringify(newUserAuth));
+                storeInLocal("user", JSON.stringify(newUserAuth));
                 setUserAuth(newUserAuth);
 
             }
